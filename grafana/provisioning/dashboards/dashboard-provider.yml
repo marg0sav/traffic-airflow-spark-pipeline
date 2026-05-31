@@ -1,0 +1,12 @@
+apiVersion: 1
+
+providers:
+  - name: traffic-dashboards
+    orgId: 1
+    folder: Traffic
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/dashboards

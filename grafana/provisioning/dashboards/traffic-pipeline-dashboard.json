@@ -1,0 +1,255 @@
+{
+  "uid": "traffic-pipeline-monitoring",
+  "title": "Traffic Pipeline Monitoring",
+  "tags": ["traffic", "clickhouse", "spark", "airflow"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "2022-08-01T00:00:00Z",
+    "to": "2022-08-07T00:00:00Z"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Средняя интенсивность трафика по датчикам",
+      "description": "Среднее значение транспортного потока в машинах в час для каждого датчика.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "traffic_clickhouse"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "traffic_clickhouse"
+          },
+          "queryType": "time_series",
+          "rawSql": "SELECT\n    window_start AS time,\n    concat('sensor_', toString(sensor_id)) AS metric,\n    avg_cars_per_hour AS value\nFROM traffic_db.traffic_window_aggregates\nWHERE $__timeFilter(window_start)\n  AND sensor_id IN (3, 4, 5)\nORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Локальный тренд транспортной нагрузки",
+      "description": "Коэффициент наклона локальной линейной регрессии внутри каждого часового окна. Положительное значение означает рост потока, отрицательное — снижение.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "traffic_clickhouse"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "traffic_clickhouse"
+          },
+          "queryType": "time_series",
+          "rawSql": "SELECT\n    window_start AS time,\n    concat('sensor_', toString(sensor_id)) AS metric,\n    slope_per_second AS value\nFROM traffic_db.traffic_local_regression\nWHERE $__timeFilter(window_start)\n  AND sensor_id IN (3, 4, 5)\nORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Качество локальной линейной аппроксимации",
+      "description": "R² показывает, насколько хорошо локальная линейная регрессия описывает значения трафика внутри часового окна.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "traffic_clickhouse"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "traffic_clickhouse"
+          },
+          "queryType": "time_series",
+          "rawSql": "SELECT\n    window_start AS time,\n    concat('sensor_', toString(sensor_id)) AS metric,\n    r2_score AS value\nFROM traffic_db.traffic_local_regression\nWHERE $__timeFilter(window_start)\n  AND sensor_id IN (3, 4, 5)\nORDER BY time",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "min": 0,
+          "max": 1,
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "fillOpacity": 5,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "barchart",
+      "title": "Распределение окон по типам тренда",
+      "description": "Количество часовых окон, классифицированных как growing, falling или stable.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "traffic_clickhouse"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "traffic_clickhouse"
+          },
+          "queryType": "table",
+          "rawSql": "SELECT\n    trend_label,\n    count() AS windows_count\nFROM traffic_db.traffic_local_regression\nWHERE sensor_id IN (3, 4, 5)\nGROUP BY trend_label\nORDER BY windows_count DESC",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Количество обработанных окон",
+      "description": "Общее количество часовых окон, рассчитанных Spark-задачей.",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "traffic_clickhouse"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "traffic_clickhouse"
+          },
+          "queryType": "table",
+          "rawSql": "SELECT\n    count() AS windows_count\nFROM traffic_db.traffic_local_regression\nWHERE sensor_id IN (3, 4, 5)",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "fields": ""
+        },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto"
+      }
+    }
+  ]
+}
