@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Airflow
+logs/
+airflow.db
+webserver_config.py
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local env
+.env
+
+# Data dumps
+*.csv
+*.parquet
+*.dump
+*.sql.gz
+
+# Generated reports
+*.pdf
