@@ -50,6 +50,7 @@ ClickHouse result tables
     |
     v
 Grafana / Superset
+```
 
 ## Локальная линейная регрессия
 
@@ -61,6 +62,7 @@ Grafana / Superset
 
 ```text
 traffic = slope * time + intercept
+```
 
 где:
 
